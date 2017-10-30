@@ -7,10 +7,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.corecruise.cruise.SessionObject;
+import com.corecruise.cruise.SessionObjectWebJSON;
 import com.corecruise.cruise.SessionObjectWebParams;
 import com.corecruise.cruise.services.interfaces.CruiseInterface;
 import com.corecruise.cruise.services.interfaces.PluginInterface;
 import com.cruisesite.utils.ValidateUser;
+import com.zaxxer.hikari.HikariConfig;
 
 
 /**
@@ -19,6 +21,49 @@ import com.cruisesite.utils.ValidateUser;
 @WebServlet({"/Cruiselet", "/test"})
 public class Cruiselet extends HttpServlet implements CruiseInterface {
 	private static final long serialVersionUID = 1L;
+	private String sample = 
+			"{\"application\" :"
+		    +"{"
+			+  "\"name\":\"SampleApplication\","
+			+  "\"id\":\"unkown\","
+			+" \"parameters\":["
+			+"    {\"key\":\"AppParam1\", \"value\":\"AppParamsomeValue1\"},"
+			+"    {\"key\":\"AppParam2\", \"value\":\"AppParamsomeValue2\"}"
+			+"]},"
+			+" \"credentials\":"
+			+"   { \"username\":\"admin\","
+			+ "    \"password\" : \"admin\","
+			+"     \"parameters\":["
+			+"        {\"key\":\"CredParam1\", \"value\":\"CredParamsomeValue1\"},"
+			+"        {\"key\":\"CredParam2\", \"value\":\"CredParamsomeValue2\"}"
+			+"]},"
+			+ "\"services\":["
+			+"    {\"action\":\"cDBCreateConnection\", "
+			+"     \"service\":\"testDatabase\", "
+			+"     \"pluginName\":\"CruiseDatabase\", "
+			+"     \"parameters\":["
+			+"        {\"key\":\"PoolName\", \"value\":\"CuiseDBPool\"},"
+			+"        {\"key\":\"DriverClassName\", \"value\":\"com.mysql.jdbc.Driver\"},"
+			+"        {\"key\":\"maximumPoolSize\", \"value\":\"25\"},"
+			+"        {\"key\":\"minimumIdle\", \"value\":\"5\"},"
+			+"        {\"key\":\"jdbcUrl\", \"value\":\"jdbc:mysql://localhost:3306/cruisecore?useSSL=false\"},"
+			+"        {\"key\":\"username\", \"value\":\"root\"},"
+			+"        {\"key\":\"password\", \"value\":\"admin\"}"
+			+"       ]"
+			+"    }"
+			+" ]"
+			+""
+			+"}";
+	/*
+	 * ds.setDriverClassName("com.mysql.jdbc.Driver");
+        HikariConfig jdbcConfig = new HikariConfig();
+        jdbcConfig.setPoolName(service.getParameter("PoolName").getValue());
+        jdbcConfig.setMaximumPoolSize(service.getParameter("maximumPoolSize").getIntValue());
+        jdbcConfig.setMinimumIdle(service.getParameter("minimumIdle").getIntValue());
+        jdbcConfig.setJdbcUrl(service.getParameter("jdbcUrl").getValue());
+        jdbcConfig.setUsername(service.getParameter("username").getValue());
+        jdbcConfig.setPassword(service.getParameter("password").getValue());
+	 */
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -40,8 +85,8 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 			ValidateUser vu = new ValidateUser();
 			vu.initializeValidation();
 			
-			SessionObjectWebParams so = new SessionObjectWebParams();
-			so.go(this, vu, request.getParameterMap());
+			SessionObjectWebJSON so = new SessionObjectWebJSON();
+			so.go(this, vu, sample,false);
 			response.getWriter().append(so.getResponseJSONPP());
 			
 		} catch (Exception e) {
