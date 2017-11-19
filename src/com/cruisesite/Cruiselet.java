@@ -1,18 +1,19 @@
 package com.cruisesite;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.corecruise.cruise.SessionObject;
-import com.corecruise.cruise.SessionObjectWebJSON;
-import com.corecruise.cruise.SessionObjectWebParams;
+import com.corecruise.cruise.SessionObjectJSON;
 import com.corecruise.cruise.services.interfaces.CruiseInterface;
 import com.corecruise.cruise.services.interfaces.PluginInterface;
 import com.cruisesite.utils.ValidateUser;
-import com.zaxxer.hikari.HikariConfig;
+
 
 
 /**
@@ -22,56 +23,78 @@ import com.zaxxer.hikari.HikariConfig;
 public class Cruiselet extends HttpServlet implements CruiseInterface {
 	private static final long serialVersionUID = 1L;
 	String sample = 
-			"{\"application\" : \"Cruise\","
-			+  "\"name\":\"SampleApplication\","
-			+  "\"id\":\"unkown\","
-			+" \"parameters\":["
-			+"    {\"key\":\"AppParam1\", \"value\":\"AppParamsomeValue1\"},"
-			+"    {\"key\":\"AppParam2\", \"value\":\"AppParamsomeValue2\"}"
-			+" ],"
-			+" \"credentials\":"
-			+"   { \"username\":\"admin\","
-			+ "    \"password\" : \"admin\","
-			+"     \"parameters\":["
-			+"        {\"key\":\"CredParam1\", \"value\":\"CredParamsomeValue1\"},"
-			+"        {\"key\":\"CredParam2\", \"value\":\"CredParamsomeValue2\"}"
-			+"       ]"
-			+"},"
-			+ "\"services\":["
-			+"    {\"action\":\"CruiseTest\", "
-			+"     \"service\":\"serviceName1\", "
-			+"     \"pluginName\":\"CruiseDatabase\", "
-			+"     \"parameters\":["
-			+"        {\"key\":\"someValue1\", \"value\":\"servicesomeValue1\"},"
-			+"        {\"key\":\"someValue2\", \"value\":\"servicesomeValue2\"}"
+			"{"+
+					"		  \"Application\" : {"+
+					"		    \"parameters\" : {"+
+					"		      \"name\" : \"sampleapp\","+
+					"		      \"id\" : \"sampleid\""+
+					"		    },"+
+					"		    \"credentials\" : {"+
+					"		      \"parameters\" : {"+
+					"		        \"password\" : \"admin\","+
+					"		        \"username\" : \"admin\""+
+					"		      }"+
+					"		    },"+
+					"		    \"services\" : {"+
+					/*"		      \"SampleService\" : {"+
+					"		        \"parameters\" : {"+
+					"		          \"pluginName\" : \"CruiseDatabase\","+
+					"		          \"service\" : \"GetPlugIn_Info\","+
+					"		          \"action\" : \"info\""+
+					"		        }"+
+					"		      },"+*/
+					"		      \"DatabaseConnection\" : {"+
+					"		        \"parameters\" : {"+
+					"		          \"pluginName\" : \"CruiseDatabase\","+
+					"		          \"service\" : \"AddConnection\","+
+					"		          \"action\" : \"cDBCreatePool\","+
+					"		          \"PoolName\" : \"MyPool\","+
+					"		          \"DriverClassName\" : \"org.mariadb.jdbc.Driver\","+
+					"		          \"maximumPoolSize\" : \"25\","+
+					"		          \"minimumIdle\" : \"5\","+
+					"		          \"jdbcUrl\" : \"jdbc:mysql://localhost:3306/cruisecore?useSSL=false\","+
+					"		          \"schema\" : \"cruisecore\","+
+					"		          \"username\" : \"root\","+
+					"		          \"password\" : \"admin\""+
+					"		        }"+
+					"		      },"+
+					
+					"		      \"TableUpdate\" : {"+
+					"		        \"parameters\" : {"+
+					"		          \"pluginName\" : \"CruiseDatabase\","+
+					"		          \"service\" : \"UpdateRecord\","+
+					"		          \"action\" : \"update\","+
+					"		          \"PoolName\" : \"MyPool\","+
+					"		          \"fromlist\" : \"cru_components\","+
+					"		          \"COMPONENTINDEX\" : \"0000\","+
+					"		          \"COMPONENTNAME\" : \"Thank you disillusionment\","+
+					"		          \"TableName\" : \"cru_components\""+
+					"		        }"+
+					"		      },"+
+					
+					"		      \"TableSelect\" : {"+
+					"		        \"parameters\" : {"+
+					"		          \"pluginName\" : \"CruiseDatabase\","+
+					"		          \"service\" : \"selectAll\","+
+					"		          \"action\" : \"select\","+
+					"		          \"PoolName\" : \"MyPool\","+
+					"		          \"fromlist\" : \"cru_components\","+
+					"		          \"TableName\" : \"cru_components\""+
+					"		        }"+
+					"		      }"+
+					/*","+
+					"		      \"DatabaseInformation\" : {"+
+					"		        \"parameters\" : {"+
+					"		          \"pluginName\" : \"CruiseDatabase\","+
+					"		          \"service\" : \"Pool Information\","+
+					"		          \"action\" : \"cDBGetPoolInfo\","+
+					"		          \"PoolName\" : \"MyPool\""+
+					"		        }"+
+					"		      }"+*/
 
-			+"       ]"
-			+"    },"
-			+"    {\"action\":\"cDBCreatePool\", "
-			+"     \"service\":\"AddConnection\", "
-			+"     \"pluginName\":\"CruiseDatabase\", "
-			+"     \"parameters\":["
-			+"        {\"key\":\"PoolName\", \"value\":\"MyPool\"},"
-			+"        {\"key\":\"DriverClassName\", \"value\":\"com.mysql.jdbc.Driver\"},"
-			+"        {\"key\":\"maximumPoolSize\", \"value\":\"25\"},"
-			+"        {\"key\":\"minimumIdle\", \"value\":\"5\"},"
-			+"        {\"key\":\"jdbcUrl\", \"value\":\"jdbc:mysql://localhost:3306/cruisecore?useSSL=false\"},"
-			+"        {\"key\":\"username\", \"value\":\"root\"},"
-			+"        {\"key\":\"password\", \"value\":\"admin\"}"
-			+"       ]"
-			+"    },"
-			+"    {\"action\":\"CruiseTest\", "
-			+"     \"service\":\"serviceName2\", "
-			+"     \"pluginName\":\"CruiseCorePlugin\", "
-			+"     \"parameters\":["
-			+"        {\"key\":\"someValue11\", \"value\":\"servicesomeValue11\"},"
-			+"        {\"key\":\"someValue22\", \"value\":\"servicesomeValue22\"}"
-			+"       ]"
-			+"    }"
-			+" ]"
-			+""
-			+"}";   
-	
+					"		    }"+
+					"		  }"+
+					"		}";
 	/*
 	jdbcConfig.setDriverClassName(service.getParameter("DriverClassName").getValue());
 	jdbcConfig.setMaximumPoolSize(service.getParameter("maximumPoolSize").IntValue());
@@ -79,14 +102,14 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 	jdbcConfig.setJdbcUrl(service.getParameter("jdbcUrl").getValue());
 	jdbcConfig.setUsername(service.getParameter("username").getValue());
 	jdbcConfig.setPassword(service.getParameter("password").getValue());
-*/
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public Cruiselet() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+	 */
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public Cruiselet() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -94,21 +117,30 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		
+
 		try {
-			
+			setAccessControlHeaders(response,request);
 			ValidateUser vu = new ValidateUser();
 			vu.initializeValidation();
-			System.out.println(sample);
-			SessionObjectWebJSON so = new SessionObjectWebJSON();
+			SessionObjectJSON so = new SessionObjectJSON();
+			//so.getResponseJSON();
+			//put the printwriter into the sessionobject state storage. This storage only last for the lifetime of the request.
+			//we can then use it during post processing to write out the important bits.
+
+			//so.setRequestState("PrintWriter", response.getWriter());
+
 			so.go(this, vu, sample,false);
-			response.getWriter().append(so.getResponseJSONPP());
-			
+			PrintWriter pw = response.getWriter();
+			pw.write(so.getResponseJSONPP());
+			pw.flush();
+			pw.close();
+
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	/**
@@ -120,21 +152,32 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 	}
 
 	@Override
-	public boolean PreProcess(SessionObject cruise,PluginInterface plugIn) {
+	public boolean PreProcess(SessionObject so,PluginInterface plugIn) {
 		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
-	public boolean PostProcess(SessionObject cruise,PluginInterface plugIn) {
-		// TODO Auto-generated method stub
+	public boolean PostProcess(SessionObject so,PluginInterface plugIn) {
+
 		return true;
 	}
 
 	@Override
-	public void ProcessingError(SessionObject cruise) {
+	public void ProcessingError(SessionObject so) {
 		System.out.println("Error occured");
-		
+
+	}
+	@Override
+	protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		setAccessControlHeaders(resp,req);
+		resp.setStatus(HttpServletResponse.SC_OK);
+	}
+
+	private void setAccessControlHeaders(HttpServletResponse resp,HttpServletRequest req) {
+		resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
+		resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
 	}
 
 }

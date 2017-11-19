@@ -33,8 +33,8 @@ public class ValidateUser implements ValidationInterface {
 	@Override
 	public boolean validateRequest(SessionObject obj) {
 		boolean ret = false;
-		if(validUsers.containsKey(obj.getApplication().getCredentials().getUsername())){
-		   if(obj.getApplication().getCredentials().getPassword().equalsIgnoreCase(validUsers.get(obj.getApplication().getCredentials().getUsername()))){
+		if(validUsers.containsKey(obj.getApplication().getCredentials().Username())){
+		   if(obj.getApplication().getCredentials().Password().equalsIgnoreCase(validUsers.get(obj.getApplication().getCredentials().Username()))){
 			   ret = true;
 		   }
 		}
