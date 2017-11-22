@@ -1,7 +1,9 @@
 package com.cruisesite;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,62 +38,13 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 					"		      }"+
 					"		    },"+
 					"		    \"services\" : {"+
-					/*"		      \"SampleService\" : {"+
+					"		      \"SampleService\" : {"+
 					"		        \"parameters\" : {"+
-					"		          \"pluginName\" : \"CruiseDatabase\","+
-					"		          \"service\" : \"GetPlugIn_Info\","+
+					"		          \"pluginName\" : \"CruiseCorePlugin\","+
+					"		          \"service\" : \"MissingCommand\","+
 					"		          \"action\" : \"info\""+
 					"		        }"+
-					"		      },"+*/
-					"		      \"DatabaseConnection\" : {"+
-					"		        \"parameters\" : {"+
-					"		          \"pluginName\" : \"CruiseDatabase\","+
-					"		          \"service\" : \"AddConnection\","+
-					"		          \"action\" : \"cDBCreatePool\","+
-					"		          \"PoolName\" : \"MyPool\","+
-					"		          \"DriverClassName\" : \"org.mariadb.jdbc.Driver\","+
-					"		          \"maximumPoolSize\" : \"25\","+
-					"		          \"minimumIdle\" : \"5\","+
-					"		          \"jdbcUrl\" : \"jdbc:mysql://localhost:3306/cruisecore?useSSL=false\","+
-					"		          \"schema\" : \"cruisecore\","+
-					"		          \"username\" : \"root\","+
-					"		          \"password\" : \"admin\""+
-					"		        }"+
-					"		      },"+
-					
-					"		      \"TableUpdate\" : {"+
-					"		        \"parameters\" : {"+
-					"		          \"pluginName\" : \"CruiseDatabase\","+
-					"		          \"service\" : \"UpdateRecord\","+
-					"		          \"action\" : \"update\","+
-					"		          \"PoolName\" : \"MyPool\","+
-					"		          \"fromlist\" : \"cru_components\","+
-					"		          \"COMPONENTINDEX\" : \"0000\","+
-					"		          \"COMPONENTNAME\" : \"Thank you disillusionment\","+
-					"		          \"TableName\" : \"cru_components\""+
-					"		        }"+
-					"		      },"+
-					
-					"		      \"TableSelect\" : {"+
-					"		        \"parameters\" : {"+
-					"		          \"pluginName\" : \"CruiseDatabase\","+
-					"		          \"service\" : \"selectAll\","+
-					"		          \"action\" : \"select\","+
-					"		          \"PoolName\" : \"MyPool\","+
-					"		          \"fromlist\" : \"cru_components\","+
-					"		          \"TableName\" : \"cru_components\""+
-					"		        }"+
 					"		      }"+
-					/*","+
-					"		      \"DatabaseInformation\" : {"+
-					"		        \"parameters\" : {"+
-					"		          \"pluginName\" : \"CruiseDatabase\","+
-					"		          \"service\" : \"Pool Information\","+
-					"		          \"action\" : \"cDBGetPoolInfo\","+
-					"		          \"PoolName\" : \"MyPool\""+
-					"		        }"+
-					"		      }"+*/
-
 					"		    }"+
 					"		  }"+
 					"		}";
@@ -119,17 +72,47 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 		// TODO Auto-generated method stub
 
 		try {
+			boolean testIncoming = false;
+			Enumeration<?> headerNames = request.getHeaderNames();
+			while (headerNames.hasMoreElements()) {
+				String key = (String) headerNames.nextElement();
+				String value = request.getHeader(key);
+				System.out.println(key+":"+value);
+				if(key.equalsIgnoreCase("content-type")) {
+					if(value.equalsIgnoreCase("text/plain") || value.equalsIgnoreCase("application/json")) {
+						testIncoming = true;
+					}
+				}
+			}
+			if(testIncoming) {
+				StringBuffer jb = new StringBuffer();
+				String line = null;
+				try {
+					BufferedReader reader = request.getReader();
+					while ((line = reader.readLine()) != null) {
+						jb.append(line);
+					}
+					sample = jb.toString();
+				} catch (Exception e) { /*report an error*/ 
+					e.printStackTrace();
+				}
+			}
+
+			// Below is prep for CORS
 			setAccessControlHeaders(response,request);
+			// Set the three boilerplate commands
 			ValidateUser vu = new ValidateUser();
 			vu.initializeValidation();
 			SessionObjectJSON so = new SessionObjectJSON();
-			//so.getResponseJSON();
-			//put the printwriter into the sessionobject state storage. This storage only last for the lifetime of the request.
-			//we can then use it during post processing to write out the important bits.
 
-			//so.setRequestState("PrintWriter", response.getWriter());
+			// SAMPLE: put the printwriter into the sessionobject state storage. This storage only last for the lifetime of the request.
+			// we can then use it during post processing to write out the important bits.
+			//    so.setRequestState("PrintWriter", response.getWriter());
 
+			// Execute the Request
 			so.go(this, vu, sample,false);
+
+			// Return Response - Boiler plate Java/Servlet stuff
 			PrintWriter pw = response.getWriter();
 			pw.write(so.getResponseJSONPP());
 			pw.flush();
@@ -178,6 +161,68 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 	private void setAccessControlHeaders(HttpServletResponse resp,HttpServletRequest req) {
 		resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
 		resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+		
+        resp.addHeader("x-access_token","Content-Type, content-type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+        resp.addHeader("Access-Control-Max-Age", "1800");//30 min
+
 	}
 
 }
+/*
+String sample = 
+"{"+
+		"		  \"Application\" : {"+
+		"		    \"parameters\" : {"+
+		"		      \"name\" : \"sampleapp\","+
+		"		      \"id\" : \"sampleid\""+
+		"		    },"+
+		"		    \"credentials\" : {"+
+		"		      \"parameters\" : {"+
+		"		        \"password\" : \"admin\","+
+		"		        \"username\" : \"admin\""+
+		"		      }"+
+		"		    },"+
+		"		    \"services\" : {"+
+		"		      \"DatabaseConnection\" : {"+
+		"		        \"parameters\" : {"+
+		"		          \"pluginName\" : \"CruiseDatabase\","+
+		"		          \"service\" : \"AddConnection\","+
+		"		          \"action\" : \"cDBCreatePool\","+
+		"		          \"PoolName\" : \"MyPool\","+
+		"		          \"DriverClassName\" : \"org.mariadb.jdbc.Driver\","+
+		"		          \"maximumPoolSize\" : \"25\","+
+		"		          \"minimumIdle\" : \"5\","+
+		"		          \"jdbcUrl\" : \"jdbc:mysql://localhost:3306/cruisecore?useSSL=false\","+
+		"		          \"schema\" : \"cruisecore\","+
+		"		          \"username\" : \"root\","+
+		"		          \"password\" : \"admin\""+
+		"		        }"+
+		"		      },"+
+		
+		"		      \"TableUpdate\" : {"+
+		"		        \"parameters\" : {"+
+		"		          \"pluginName\" : \"CruiseDatabase\","+
+		"		          \"service\" : \"UpdateRecord\","+
+		"		          \"action\" : \"update\","+
+		"		          \"PoolName\" : \"MyPool\","+
+		"		          \"fromlist\" : \"cru_components\","+
+		"		          \"COMPONENTINDEX\" : \"0000\","+
+		"		          \"COMPONENTNAME\" : \"Thank you disillusionment\","+
+		"		          \"TableName\" : \"cru_components\""+
+		"		        }"+
+		"		      },"+
+		
+		"		      \"TableSelect\" : {"+
+		"		        \"parameters\" : {"+
+		"		          \"pluginName\" : \"CruiseDatabase\","+
+		"		          \"service\" : \"selectAll\","+
+		"		          \"action\" : \"select\","+
+		"		          \"PoolName\" : \"MyPool\","+
+		"		          \"fromlist\" : \"cru_components\","+
+		"		          \"TableName\" : \"cru_components\""+
+		"		        }"+
+		"		      }"+
+		"		    }"+
+		"		  }"+
+		"		}";
+*/
