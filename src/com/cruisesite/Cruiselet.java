@@ -13,8 +13,10 @@ import javax.servlet.http.HttpServletResponse;
 import com.corecruise.cruise.SessionObject;
 import com.corecruise.cruise.SessionObjectJSON;
 import com.corecruise.cruise.services.interfaces.CruiseInterface;
-import com.corecruise.cruise.services.interfaces.PluginInterface;
+import com.corecruise.cruise.services.utils.Services;
 import com.cruisesite.utils.ValidateUser;
+
+
 
 
 
@@ -135,18 +137,6 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 	}
 
 	@Override
-	public boolean PreProcess(SessionObject so,PluginInterface plugIn) {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	@Override
-	public boolean PostProcess(SessionObject so,PluginInterface plugIn) {
-
-		return true;
-	}
-
-	@Override
 	public void ProcessingError(SessionObject so) {
 		System.out.println("Error occured");
 
@@ -165,6 +155,20 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
         resp.addHeader("x-access_token","Content-Type, content-type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
         resp.addHeader("Access-Control-Max-Age", "1800");//30 min
 
+	}
+
+	@Override
+	public boolean PreProcess(SessionObject sessionObject, Services service) {
+		boolean ret = true;
+        ret = sessionObject.doPreProcess(service);
+		return ret;
+	}
+
+	@Override
+	public boolean PostProcess(SessionObject sessionObject, Services service) {
+		boolean ret = true;
+        ret = sessionObject.doPostProcess(service);
+		return ret;
 	}
 
 }
