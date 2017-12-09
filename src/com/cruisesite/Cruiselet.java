@@ -6,13 +6,16 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+
 import com.corecruise.cruise.SessionObject;
 import com.corecruise.cruise.SessionObjectJSON;
-import com.corecruise.cruise.services.interfaces.CruiseInterface;
+import com.corecruise.cruise.services.interfaces.PluginClientInterface;
 import com.corecruise.cruise.services.utils.Services;
 import com.cruisesite.utils.ValidateUser;
 
@@ -24,7 +27,11 @@ import com.cruisesite.utils.ValidateUser;
  * Servlet implementation class Cruiselet
  */
 @WebServlet({"/Cruiselet", "/test"})
-public class Cruiselet extends HttpServlet implements CruiseInterface {
+@MultipartConfig(fileSizeThreshold = 6291456, // 6 MB
+				 maxFileSize = 10485760L, // 10 MB
+				 maxRequestSize = 20971520L // 20 MB
+)
+public class Cruiselet extends HttpServlet implements PluginClientInterface {
 	private static final long serialVersionUID = 1L;
 	String sample = 
 			"{"+
@@ -40,13 +47,12 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 					"		      }"+
 					"		    },"+
 					"		    \"services\" : {"+
-					"		      \"SampleService\" : {"+
 					"		        \"parameters\" : {"+
 					"		          \"pluginName\" : \"CruiseCorePlugin\","+
 					"		          \"service\" : \"MissingCommand\","+
 					"		          \"action\" : \"info\""+
 					"		        }"+
-					"		      }"+
+
 					"		    }"+
 					"		  }"+
 					"		}";
@@ -106,7 +112,33 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 			ValidateUser vu = new ValidateUser();
 			vu.initializeValidation();
 			SessionObjectJSON so = new SessionObjectJSON();
+            //Check for multipart
+			if (request.getContentType() != null && request.getContentType().startsWith("multipart/")) {
+				for (Part part : request.getParts()) {
+					if (part != null && part.getSize() > 0) {
+						String fileName = part.getSubmittedFileName();
+						String contentType = part.getContentType();
 
+						// allows only JPEG files to be uploaded
+						if (!contentType.equalsIgnoreCase("image/jpeg")) {
+							continue;
+						}
+
+						/*part.write(uploadFilePath + File.separator + fileName);
+
+					writer.append("File successfully uploaded to " 
+							+ uploadFolder.getAbsolutePath() 
+							+ File.separator
+							+ fileName
+							+ "<br>\r\n");
+						 */
+					}
+				}		
+			}
+			
+			
+			
+			
 			// SAMPLE: put the printwriter into the sessionobject state storage. This storage only last for the lifetime of the request.
 			// we can then use it during post processing to write out the important bits.
 			//    so.setRequestState("PrintWriter", response.getWriter());
@@ -160,6 +192,7 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 	@Override
 	public boolean PreProcess(SessionObject sessionObject, Services service) {
 		boolean ret = true;
+		//ValidateUser vu = (ValidateUser) sessionObject.getValidator();
         ret = sessionObject.doPreProcess(service);
 		return ret;
 	}
@@ -167,6 +200,7 @@ public class Cruiselet extends HttpServlet implements CruiseInterface {
 	@Override
 	public boolean PostProcess(SessionObject sessionObject, Services service) {
 		boolean ret = true;
+		//ValidateUser vu = (ValidateUser) sessionObject.getValidator();
         ret = sessionObject.doPostProcess(service);
 		return ret;
 	}
