@@ -26,7 +26,7 @@ import com.cruisesite.utils.ValidateUser;
 /**
  * Servlet implementation class Cruiselet
  */
-@WebServlet({"/Cruiselet", "/test"})
+@WebServlet({"/Cruiselet"})
 @MultipartConfig(fileSizeThreshold = 6291456, // 6 MB
 				 maxFileSize = 10485760L, // 10 MB
 				 maxRequestSize = 20971520L // 20 MB
