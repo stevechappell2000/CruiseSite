@@ -4,7 +4,7 @@
 	<groupId>com.cuisesite</groupId>
 	<artifactId>CuiseSite</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>Cruise Web Site</name>
 	<description>Cruise Core Access</description>
 
@@ -13,16 +13,27 @@
 	</properties>
 	<dependencies>
 		<dependency>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-server</artifactId>
+		    <version>9.4.3.v20170317</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-servlet</artifactId>
+		    <version>9.4.3.v20170317</version>
+		</dependency>	
+	
+		<dependency>
 			<groupId>jstl</groupId>
 			<artifactId>jstl</artifactId>
 			<version>1.2</version>
 		</dependency>
-		<dependency>
+		<!-- dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
 			<scope>provided</scope>
-		</dependency>
+		</dependency -->
 		<dependency>
 			<groupId>com.corecruise</groupId>
 			<artifactId>cruise</artifactId>
@@ -53,6 +64,9 @@
 			<artifactId>CruiseKafka</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
+		
+		
 	</dependencies>
 
 
@@ -67,13 +81,74 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+			
 			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-shade-plugin</artifactId>
+			    <version>2.3</version>
+			    <executions>
+			        <execution>
+			            <phase>package</phase>
+			            <goals>
+			                <goal>shade</goal>
+			            </goals>
+			            <configuration>
+			            <failOnMissingWebXml>false</failOnMissingWebXml>
+			                <artifactSet>
+			                    <excludes>
+			                        <exclude>junit:junit</exclude>
+			                        <exclude>jmock:*</exclude>
+			                        <exclude>*:xml-apis</exclude>
+			                    </excludes>
+			                </artifactSet>
+			                <transformers>
+			                    <transformer
+			                            implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+			                        <!-- resource>
+			                            META-INF/services/conf.file
+			                        </resource -->
+			                    </transformer>
+			                    <transformer
+			                            implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+			                        <manifestEntries>
+			                            <Main-Class>com.cruisesite.Main</Main-Class>
+			                            <X-Compile-Source-JDK>1.8</X-Compile-Source-JDK>
+			                            <X-Compile-Target-JDK>1.8</X-Compile-Target-JDK>
+			                        </manifestEntries>
+			                    </transformer>
+			                </transformers>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin> 	
+			
+			
+			
+			
+			<!-- plugin>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
 					<warSourceDirectory>WebContent</warSourceDirectory>
 				</configuration>
-			</plugin>
+			</plugin -->
+
+            <!-- plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>com.cruisesite.Main</mainClass>
+                </configuration>
+            </plugin -->
+
 		</plugins>
 	</build>
 </project>

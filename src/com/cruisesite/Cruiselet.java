@@ -1,6 +1,7 @@
 package com.cruisesite;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
@@ -26,7 +27,7 @@ import com.cruisesite.utils.ValidateUser;
 /**
  * Servlet implementation class Cruiselet
  */
-@WebServlet({"/Cruiselet"})
+@WebServlet({"/Cruise"})
 @MultipartConfig(fileSizeThreshold = 6291456, // 6 MB
 				 maxFileSize = 10485760L, // 10 MB
 				 maxRequestSize = 20971520L // 20 MB
@@ -72,6 +73,15 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 		// TODO Auto-generated constructor stub
 	}
 
+
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 * http://localhost:8079/CuiseSite/Cruiselet?application=Hello&username=admin&password=admin&action=cDBCreateConnection&service=sampleService&value1=hello&Test=world
@@ -112,7 +122,7 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 			ValidateUser vu = new ValidateUser();
 			vu.initializeValidation();
 			SessionObjectJSON so = new SessionObjectJSON();
-            //Check for multipart
+			//Check for multipart
 			if (request.getContentType() != null && request.getContentType().startsWith("multipart/")) {
 				for (Part part : request.getParts()) {
 					if (part != null && part.getSize() > 0) {
@@ -126,14 +136,15 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 
 						/*part.write(uploadFilePath + File.separator + fileName);
 
-					writer.append("File successfully uploaded to " 
-							+ uploadFolder.getAbsolutePath() 
-							+ File.separator
-							+ fileName
-							+ "<br>\r\n");
-						 */
-					}
-				}		
+						writer.append("File successfully uploaded to " 
+								+ uploadFolder.getAbsolutePath() 
+								+ File.separator
+								+ fileName
+								+ "<br>\r\n");
+
+						}*/
+					}		
+				}
 			}
 			
 			
@@ -160,13 +171,6 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
-	}
 
 	@Override
 	public void ProcessingError(SessionObject so) {
