@@ -17,7 +17,7 @@ import com.corecruise.cruise.testharness.ValidateUser;
 
 public class Runner implements PluginClientInterface{
 	ValidateUser vu = null;
-	SessionObjectJSON so = null;
+	SessionObjectJSON sessionObject = null;
     public Runner() {
     	if(null == vu) {
     		//Boiler plate
@@ -26,7 +26,7 @@ public class Runner implements PluginClientInterface{
 			//do validation
 			vu.initializeValidation();
 			//create a sessionObject
-			so = new SessionObjectJSON();
+			sessionObject = new SessionObjectJSON();
 			
     	}
     }
@@ -36,10 +36,10 @@ public class Runner implements PluginClientInterface{
     		//read the file (JSON) actions
     		String x = new String(Files.readAllBytes(Paths.get(filename)));
     		//using the SessionObject, execute the JSON actions
-			ret = so.go(this, vu, x,false);
+			ret = sessionObject.go(this, vu, x,false);
 			
 			try {
-				System.out.println(so.getResponseJSONPP());
+				System.out.println(sessionObject.getResponseJSONPP());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -53,7 +53,7 @@ public class Runner implements PluginClientInterface{
     	boolean ret = false;
     	try {
     		//using the SessionObject, execute the JSON actions
-			ret = so.go(this, vu, jsonString ,false);
+			ret = sessionObject.go(this, vu, jsonString ,false);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -62,10 +62,13 @@ public class Runner implements PluginClientInterface{
 		return ret;
     }
     public boolean goPlugin(PluginInterface pi, Services service) {
-    	return pi.executePlugin(so, service);
+    	return pi.executePlugin(sessionObject, service);
+    }
+    public void reset() {
+    	sessionObject.resetResponse();
     }
     public String getResponse() throws Exception {
-    	return so.getResponseJSONPP();
+    	return sessionObject.getResponseJSONPP();
     }
 	public boolean PreProcess(SessionObject sessionObject, Services service) {
 		// TODO Auto-generated method stub
@@ -82,10 +85,10 @@ public class Runner implements PluginClientInterface{
 		
 	}
 	public SessionObjectJSON getSessionObject() {
-		return so;
+		return sessionObject;
 	}
 	public void setSessonObject(SessionObjectJSON so) {
-		this.so = so;
+		this.sessionObject = so;
 	}
 	public boolean validateUser(String user, String pass) {
 		boolean ret = false;

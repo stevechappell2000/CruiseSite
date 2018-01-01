@@ -56,6 +56,7 @@ public class Main {
 			//int cnt = 0;
 			//selectPlugin(r);
 			while(continueRunning) {
+				r.reset();
 				processActions(r);
 			}
 		}else {
@@ -99,6 +100,7 @@ public class Main {
 		try {
 			int cnt = 0;
 			int selected = -1;
+			System.out.println("\nAvailable Plugins:");
 			System.out.println("0:Exit");
 
 			for(String n: plugins) {
@@ -116,6 +118,7 @@ public class Main {
 				}else {
 					continueAction = true;
 					while(continueAction) {
+						
 						selectAction(r, plugins.get(selected-1));
 					}
 				}
@@ -193,6 +196,7 @@ public class Main {
 			}
 			System.out.println("Service Result:"+ret+" (Press return to continue)");
 			sSelected = scanner.nextLine();
+			r.reset();
 		}
 		continueParameters = false;
 		/*System.out.print("Select Action Number (0-"+cnt+"): ");
@@ -245,57 +249,80 @@ public class Main {
 			System.out.println("Bad port number entered.");
 			return;
 		}
-		try {
-			executor = Executors.newSingleThreadExecutor();
-			executor.submit(() -> {
-				System.out.println("Server starting on port:"+port);
-				server = new Server(port);
+		System.out.print("Start as Interactive?(Y/N):");
+		String interactive = scanner.nextLine();
+		if(interactive.trim().toUpperCase().startsWith("N")) {
+			server = new Server(port);
 
-				// The ServletHandler is a dead simple way to create a context handler
-				// that is backed by an instance of a Servlet.
-				// This handler then needs to be registered with the Server object.
-				ServletHandler handler = new ServletHandler();
-				server.setHandler(handler);
-				System.out.println("Server handler init.");
-				// Passing in the class for the Servlet allows jetty to instantiate an
-				// instance of that Servlet and mount it on a given context path.
+			// The ServletHandler is a dead simple way to create a context handler
+			// that is backed by an instance of a Servlet.
+			// This handler then needs to be registered with the Server object.
+			ServletHandler handler = new ServletHandler();
+			server.setHandler(handler);
+			System.out.println("Server handler init.");
+			// Passing in the class for the Servlet allows jetty to instantiate an
+			// instance of that Servlet and mount it on a given context path.
 
-				// IMPORTANT:
-				// This is a raw Servlet, not a Servlet that has been configured
-				// through a web.xml @WebServlet annotation, or anything similar.
-				handler.addServletWithMapping(Cruiselet.class, "/Cruise");
-				System.out.println("Server Mapping Servlet Cruiselet.class");
-				// Start things up!
-				try {
-					server.start();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			// IMPORTANT:
+			// This is a raw Servlet, not a Servlet that has been configured
+			// through a web.xml @WebServlet annotation, or anything similar.
+			handler.addServletWithMapping(Cruiselet.class, "/Cruise");
+			System.out.println("Server Mapping Servlet Cruiselet.class");
+			// Start things up!
+			try {
+				server.start();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
-				// The use of server.join() the will make the current thread join and
-				// wait until the server is done executing.
-				// See
-				// http://docs.oracle.com/javase/7/docs/api/java/lang/Thread.html#join()
-				try {
-					System.out.println("Server is being joined");
-					server.join();
-					serverRunning = true;
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.out.println("Server started.");
-			});
-		}catch(Exception err) {
-			err.printStackTrace();
+			// The use of server.join() the will make the current thread join and
+			// wait until the server is done executing.
+			// See
+			// http://docs.oracle.com/javase/7/docs/api/java/lang/Thread.html#join()
+			try {
+				System.out.println("Server is being joined");
+				server.join();
+				serverRunning = true;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}else {
+			try {
+				executor = Executors.newSingleThreadExecutor();
+				executor.submit(() -> {
+					System.out.println("Server starting on port:"+port);
+					server = new Server(port);
+					ServletHandler handler = new ServletHandler();
+					server.setHandler(handler);
+					System.out.println("Server handler init.");
+					handler.addServletWithMapping(Cruiselet.class, "/Cruise");
+					System.out.println("Server Mapping Servlet Cruiselet.class");
+					// Start things up!
+					try {
+						server.start();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						System.out.println("Server is being joined");
+						server.join();
+						serverRunning = true;
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.out.println("Server started.");
+				});
+			}catch(Exception err) {
+				err.printStackTrace();
+			}
+			serverRunning = true;
+			System.out.println("Done!");
 		}
-		serverRunning = true;
-
-		System.out.println("Done!");
-
-
-
 	}
 	private static void stopServer() {
 		if(serverRunning) {
