@@ -1,11 +1,12 @@
 package com.cruisesite;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.util.Enumeration;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -27,7 +28,8 @@ import com.cruisesite.utils.ValidateUser;
 /**
  * Servlet implementation class Cruiselet
  */
-@WebServlet({"/Cruise"})
+//@WebServlet({"/Cruise"})
+@WebServlet(urlPatterns = "/Cruise", loadOnStartup = 1)
 @MultipartConfig(fileSizeThreshold = 6291456, // 6 MB
 				 maxFileSize = 10485760L, // 10 MB
 				 maxRequestSize = 20971520L // 20 MB
@@ -72,7 +74,18 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
+	public void init(ServletConfig config)throws ServletException{
+    	super.init(config);
+    	try {
+			Main.registerServer();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 
 
 	/**
