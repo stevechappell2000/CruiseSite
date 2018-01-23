@@ -54,7 +54,7 @@
 			<groupId>com.cruise.plugins</groupId>
 			<artifactId>CruiseJS</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency -->
+		</dependency-->
 		<dependency>
 			<groupId>com.cruise.plugins</groupId>
 			<artifactId>CruiseS3</artifactId>
