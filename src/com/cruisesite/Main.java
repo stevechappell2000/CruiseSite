@@ -83,7 +83,7 @@ public class Main {
 					"		         {\"parameters\" : {"+
 					"                     \"pluginName\" : \"CruiseRouter\","+
 					"                     \"action\" : \"addServer\","+
-					"                     \"active\" : \"false\","+
+					"                     \"startInactive\" : \"false\","+
 					"                     \"serverName\" : \"%serverName\","+
 					"                     \"serverURL\" : \"%thisURL\","+
 					"                     \"plugIns\" : \"%plugins\","+
