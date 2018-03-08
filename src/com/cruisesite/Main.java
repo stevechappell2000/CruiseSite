@@ -1,26 +1,14 @@
 package com.cruisesite;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.net.ssl.HttpsURLConnection;
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-
 import com.corecruise.core.CoreCruise;
+import com.corecruise.cruise.config.CruisePluginEnvironment;
 import com.corecruise.cruise.services.interfaces.PluginInterface;
 import com.corecruise.cruise.services.utils.Services;
 import com.cruise.plugins.Action;
@@ -66,82 +54,84 @@ public class Main {
 					"		    ]"+
 					"		  }"+
 					"		}";
-	static String register = 
-			"{"+
-					"		  \"Application\" : {"+
-					"		    \"parameters\" : {"+
-					"		      \"name\" : \"CruiseRouter\","+
-					"		      \"id\" : \"AutoRouter\""+
-					"		    },"+
-					"		    \"credentials\" : {"+
-					"		      \"parameters\" : {"+
-					"		        \"password\" : \"admin\","+
-					"		        \"username\" : \"admin\""+
-					"		      }"+
-					"		    },"+
-					"		    \"services\" : ["+
-					"		         {\"parameters\" : {"+
-					"                     \"pluginName\" : \"CruiseRouter\","+
-					"                     \"action\" : \"addServer\","+
-					"                     \"startInactive\" : \"false\","+
-					"                     \"serverName\" : \"%serverName\","+
-					"                     \"serverURL\" : \"%thisURL\","+
-					"                     \"plugIns\" : \"%plugins\","+
-					"                     \"applicationName\" : \"%applicationName\","+
-					"                     \"serverPort\" : \"%port\""+
-					"		              }"+
-					"		         }"+
-					"		    ]"+
-					"		  }"+
-					"		}";
+
 	public static void main( String[] args ){   
 		
         portNumber = null;
         serverName = null;
         targetURL = null;
-        //String two = null;
-	    try {
-	        portNumber = args[0];
-	        if(portNumber.contains("|")) {
-	        	String[] s = portNumber.split("\\|");
-	        	if(s.length==2) {
-	        		portNumber = s[0];
-	        		serverName = s[1];
-	        	}else if(s.length > 2) {
-	        		portNumber = s[0];
-	        		serverName = s[1];
-	        		targetURL  = s[2];
-	        	}
-	        }
-	    }
-	    catch (ArrayIndexOutOfBoundsException e){
-	        System.out.println("ArrayIndexOutOfBoundsException caught");
-	    }
-		Runner r = new Runner();
-		r.go(ret);
-		if(null == portNumber ) {
-			if(validUser(r)) {
-				getPlugins(r);
-				//int cnt = 0;
-				//selectPlugin(r);
-				while(continueRunning) {
-					r.reset();
-					processActions(r);
-				}
-			}else {
-				System.out.print("Invalid login. Application Quitint");
-				System.exit(0);
-			}
-		}else {
-			try {
-				System.out.println("PortNumber:"+portNumber);
-				port = new Integer(portNumber).intValue();
-				startServer(portNumber,"n");
+        try {
+        	///////////////////////////////////////
+        	// Check properties file for startup params
+        	CruisePluginEnvironment config = null;
+        	String pluginName = "CruiseCorePlugin";
+        	if(null == config)
+        		config = CoreCruise.getCruiseConfig(pluginName);
+        	if(null != config) {
+        		if(config.getPluginProperties().containsKey("serverName")) {
+        			serverName = config.getPluginProperties().getProperty("serverName");
+        		}
+        		if(config.getPluginProperties().containsKey("portNumber")) {
+        			portNumber = config.getPluginProperties().getProperty("portNumber");
+        		}
+        		if(config.getPluginProperties().containsKey("registerWith")) {
+        			targetURL = config.getPluginProperties().getProperty("registerWith");
+        		}
+        	}
+            ////////////////////////////////////
+        	// Check args, if found they override properties
+        	if(null == args || args.length<1) {
+        		if(null == portNumber)
+        			portNumber = "8079";
+        		if(null == serverName)
+        			serverName = "CruiseGenericServer";
+        		//targetURL = "http://localhost:8079/Cruise";
+        	}else if(args.length == 1 && args[0].contains("|") == false) {
+        		portNumber = args[0];
+        		serverName = "CruiseGenericServer";
+        		//targetURL = "http://localhost:"+portNumber+"/Cruise";
+        	}else if(args.length > 0 && args[0].contains("|") == true) {
+        		String[] s = args[0].split("\\|");
+        		if(s.length==2) {
+        			portNumber = s[0];
+        			serverName = s[1];
+        			//targetURL = "http://localhost:"+portNumber+"/Cruise";
+        		}else if(s.length > 2) {
+        			portNumber = s[0];
+        			serverName = s[1];
+        			targetURL  = s[2];
+        		}
+        	}
+        	////////////////////////////////////
+        }
+        catch (ArrayIndexOutOfBoundsException e){
+        	System.out.println("ArrayIndexOutOfBoundsException caught");
+        }
+        Runner r = new Runner();
+        r.go(ret);
+        if(null == portNumber ) {
+        	if(validUser(r)) {
+        		getPlugins(r);
+        		//int cnt = 0;
+        		//selectPlugin(r);
+        		while(continueRunning) {
+        			r.reset();
+        			processActions(r);
+        		}
+        	}else {
+        		System.out.print("Invalid login. Application Quitint");
+        		System.exit(0);
+        	}
+        }else {
+        	try {
+        		System.out.println("PortNumber:"+portNumber);
+        		port = new Integer(portNumber).intValue();
+        		startServer(portNumber,"n");
 
-			}catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
+        	}catch(Exception e) {
+        		e.printStackTrace();
+        	}
+        }
 	}
 	private static void processActions(Runner r) {
 		System.out.println("\n***************");
@@ -340,48 +330,57 @@ public class Main {
         	interactive = "n";
         }
 		if(interactive.trim().toUpperCase().startsWith("N")) {
-			server = new Server(port);
-            thisURL = server.getURI().toString();
-            if(thisURL.trim().endsWith("/")) {
-            	thisURL = thisURL.substring(0, thisURL.trim().length()-1);
-            }
-            System.out.println("SERVER URI:"+thisURL);
-			// The ServletHandler is a dead simple way to create a context handler
-			// that is backed by an instance of a Servlet.
-			// This handler then needs to be registered with the Server object.
-			ServletHandler handler = new ServletHandler();
+			//executor = Executors.newSingleThreadExecutor();
+			//executor.submit(() -> {
+				server = new Server(port);
+				thisURL = server.getURI().toString();
+				if(thisURL.trim().endsWith("/")) {
+					thisURL = thisURL.substring(0, thisURL.trim().length()-1);
+				}
+				System.out.println("SERVER URI:"+thisURL);
+				// The ServletHandler is a dead simple way to create a context handler
+				// that is backed by an instance of a Servlet.
+				// This handler then needs to be registered with the Server object.
+				ServletHandler handler = new ServletHandler();
+
+				server.setHandler(handler);
+				// Passing in the class for the Servlet allows jetty to instantiate an
+				// instance of that Servlet and mount it on a given context path.
+
+				// IMPORTANT:
+				// This is a raw Servlet, not a Servlet that has been configured
+				// through a web.xml @WebServlet annotation, or anything similar.
+				ServletHolder x = handler.addServletWithMapping(Cruiselet.class, slashCruiseServletName);
+				x.setInitParameter("gzip", "true");
+				x.setInitOrder(1);
+				//pin = mapper.readValue(plugInFo, PluginNames.class);
+
+
+				try {
+					server.start();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					executor.shutdown();
+				}
+
+				// The use of server.join() the will make the current thread join and
+				// wait until the server is done executing.
+				// See
+				// http://docs.oracle.com/javase/7/docs/api/java/lang/Thread.html#join()
+				try {
+					System.out.println("Server is being joined");
+					server.join();
+					serverRunning = true;
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					executor.shutdown();
+				}
+			//});
 			
-			server.setHandler(handler);
-			// Passing in the class for the Servlet allows jetty to instantiate an
-			// instance of that Servlet and mount it on a given context path.
-
-			// IMPORTANT:
-			// This is a raw Servlet, not a Servlet that has been configured
-			// through a web.xml @WebServlet annotation, or anything similar.
-			ServletHolder x = handler.addServletWithMapping(Cruiselet.class, slashCruiseServletName);
-			x.setInitParameter("gzip", "true");
-			x.setInitOrder(1);
-			// Start things up!
-			try {
-				server.start();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			// The use of server.join() the will make the current thread join and
-			// wait until the server is done executing.
-			// See
-			// http://docs.oracle.com/javase/7/docs/api/java/lang/Thread.html#join()
-			try {
-				System.out.println("Server is being joined");
-				server.join();
-				serverRunning = true;
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
+			
+	    				
 		}else {
 			try {
 				executor = Executors.newSingleThreadExecutor();
@@ -434,80 +433,6 @@ public class Main {
 		serverRunning = false;
 		server = null;
 	}
-	public static String registerServer() throws MalformedURLException, IOException{
-		StringBuffer content = null;
-
-		if(null == targetURL || null == portNumber) {
-              content = new StringBuffer();
-		}else {
-			String MyRegister = register.replace("%serverName", serverName).replace("%thisURL", thisURL).replace("%applicationName", applicationName).replace("%port", portNumber);
-			String[] pmda = new String[CoreCruise.getListOfPlugins().size()];
-			plugins = new ArrayList<String>();
-			int i=0;
-			for(String p :CoreCruise.getListOfPlugins()) {
-	            pmda[i++] = p;
-	            plugins.add(p);
-	        }
-			Arrays.sort(pmda);
-			String SupportedPlugins = String.join(":", pmda);
-			MyRegister = MyRegister.replace("%plugins", SupportedPlugins);
-			int status = 0;
-			BufferedReader in = null;
-			DataOutputStream out = null;
-			String inputLine;
-			if(targetURL.trim().toLowerCase().startsWith("http:")) {
-				URL url = new URL(targetURL);
-				HttpURLConnection con = (HttpURLConnection) url.openConnection();
-				con.setRequestMethod("POST");
-				con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-				con.setRequestProperty("Content-Type", "application/json");
-				con.setConnectTimeout(5000);
-				con.setReadTimeout(5000);
-
-				con.setDoOutput(true);
-				out = new DataOutputStream(con.getOutputStream());
-				out.writeBytes(MyRegister);
-				out.flush();
-				out.close();
-
-				status = con.getResponseCode();
-				in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-
-				content = new StringBuffer();
-				while ((inputLine = in.readLine()) != null) {
-					content.append(inputLine);
-				}
-				in.close();
-				con.disconnect();
-			}else if(targetURL.trim().toLowerCase().startsWith("https:")) {
-				URL url = new URL(targetURL);
-				HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
-				con.setRequestMethod("POST");
-				con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-				con.setRequestProperty("Content-Type", "application/json");
-				con.setConnectTimeout(5000);
-				con.setReadTimeout(5000);
-
-				con.setDoOutput(true);
-				out = new DataOutputStream(con.getOutputStream());
-				out.writeBytes(MyRegister);
-				out.flush();
-				out.close();
-
-				status = con.getResponseCode();
-				in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-
-				content = new StringBuffer();
-				while ((inputLine = in.readLine()) != null) {
-					content.append(inputLine);
-				}
-				in.close();
-				con.disconnect();
-			}
-			
-		}
-		return content.toString();
-	}
 	public static String getApplicationName() {
 		return applicationName;
 	}
@@ -538,12 +463,7 @@ public class Main {
 	public static void setPortNumber(String portNumber) {
 		Main.portNumber = portNumber;
 	}
-	public static String getRegister() {
-		return register;
-	}
-	public static void setRegister(String register) {
-		Main.register = register;
-	}
+
 
 
 }

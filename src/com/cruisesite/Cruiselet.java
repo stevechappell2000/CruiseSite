@@ -3,9 +3,7 @@ package com.cruisesite;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.util.Enumeration;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -14,16 +12,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-
+import com.corecruise.core.CoreCruise;
 import com.corecruise.cruise.SessionObject;
 import com.corecruise.cruise.SessionObjectJSON;
+import com.corecruise.cruise.config.CruisePluginEnvironment;
 import com.corecruise.cruise.services.interfaces.PluginClientInterface;
 import com.corecruise.cruise.services.utils.Services;
 import com.cruisesite.utils.ValidateUser;
-
-
-
-
 
 /**
  * Servlet implementation class Cruiselet
@@ -36,6 +31,8 @@ import com.cruisesite.utils.ValidateUser;
 )
 public class Cruiselet extends HttpServlet implements PluginClientInterface {
 	private static final long serialVersionUID = 1L;
+	private static boolean registered = false;
+	private static CruisePluginEnvironment CPE = null;
 	String sample = 
 			"{"+
 					"		  \"Application\" : {"+
@@ -49,14 +46,20 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 					"		        \"username\" : \"admin\""+
 					"		      }"+
 					"		    },"+
-					"		    \"services\" : {"+
-					"		        \"parameters\" : {"+
-					"		          \"pluginName\" : \"CruiseCorePlugin\","+
-					"		          \"service\" : \"MissingCommand\","+
-					"		          \"action\" : \"info\""+
-					"		        }"+
-
-					"		    }"+
+					
+					"		    \"services\" : ["+
+					"		         {\"parameters\" : {"+
+					"                     \"pluginName\" : \"CruiseCorePlugin\","+
+					"                     \"action\" : \"serverinfo\","+
+					"                     \"service\" : \"MissingCommand\""+
+					"		              }"+
+					"		         }"+
+					"		    ]"+					
+					
+					
+					
+					
+					
 					"		  }"+
 					"		}";
 	/*
@@ -76,32 +79,25 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 	}
 	public void init(ServletConfig config)throws ServletException{
     	super.init(config);
-    	try {
-			Main.registerServer();
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
     }
 
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doGet(request, response);
+		doPost(request, response);
 	}
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 * http://localhost:8079/CuiseSite/Cruiselet?application=Hello&username=admin&password=admin&action=cDBCreateConnection&service=sampleService&value1=hello&Test=world
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-
+        if(!registered) {
+        	registerCruiseServiceEngine(request);
+        }
 		try {
 			boolean testIncoming = false;
 			Enumeration<?> headerNames = request.getHeaderNames();
@@ -168,14 +164,14 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 			//    so.setRequestState("PrintWriter", response.getWriter());
 
 			// Execute the Request
-			so.go(this, vu, sample,false);
-
+			so.go(this, vu, "{\"Application\":"+sample+"}",false);
+			System.out.println("Execution Time1:"+ (System.currentTimeMillis()-so.start));
 			// Return Response - Boiler plate Java/Servlet stuff
 			PrintWriter pw = response.getWriter();
-			pw.write(so.getResponseJSONPP());
+			pw.write(so.getResponseJSON());
 			pw.flush();
 			pw.close();
-
+			System.out.println("Execution Time2:"+ (System.currentTimeMillis()-so.start));
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -183,7 +179,35 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 		}
 
 	}
-
+    private synchronized void registerCruiseServiceEngine(HttpServletRequest request) {
+    	if(registered) {
+    		return;
+    	}
+    	registered = true;
+    	try {
+    		String server =   request.getServerName() ;
+    		Integer port = request.getServerPort();
+    		String scheme = request.getScheme();
+    		String registerTo = null;
+    		
+    		CPE = CoreCruise.getCruiseConfig("CruiseCorePlugin");
+    		//String serverName = CPE.getPluginProperties().getProperty("serverName");
+    		String registerWith = CPE.getPluginProperties().getProperty("registerWith");
+    		String applicationName = CPE.getPluginProperties().getProperty("applicationName");
+    		String serverName = CPE.getPluginProperties().getProperty("serverName");
+    		try {
+    			//CoreCruise.registerServer(scheme, server, port.toString(), registerWith, applicationName, serverName);
+    			//CoreCruise.getConnection(null, null, null, CruiseNode cn, String server,String sURL,String sPort,String sActive)
+    		}catch(Exception e) {
+    			System.out.println("FAILED TO REGISTER SERVER:"+e.getMessage());
+    			registered = false;
+    		}
+    		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 
 	@Override
 	public void ProcessingError(SessionObject so) {
@@ -198,10 +222,14 @@ public class Cruiselet extends HttpServlet implements PluginClientInterface {
 	}
 
 	private void setAccessControlHeaders(HttpServletResponse resp,HttpServletRequest req) {
-		resp.setHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
+		
+		//access-control-allow-credentials,,content-type
+		resp.setHeader("Access-Control-Allow-Origin", "*");//req.getHeader("Origin"));
+		//Request header field Access-Control-Allow-Origin is not allowed by Access-Control-Allow-Headers in preflight response.
+		resp.setHeader("Access-Control-Allow-Credentials", "true");
 		resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
 		
-        resp.addHeader("x-access_token","Content-Type, content-type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+        resp.addHeader("x-access_token","Content-Type, content-type, Access-Control-Allow-Headers, Authorization, X-Requested-With, Access-Control-Allow-Credentials, Access-Control-Allow-Methods");
         resp.addHeader("Access-Control-Max-Age", "1800");//30 min
 
 	}

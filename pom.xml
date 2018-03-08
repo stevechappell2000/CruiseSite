@@ -61,17 +61,17 @@
 			<artifactId>CruiseS3</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		<!-- dependency>
+
+		<dependency>
+			<groupId>com.cruise.plugins</groupId>
+			<artifactId>CruiseDynamoDB</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>com.cruise.plugins</groupId>
 			<artifactId>CruiseRoute</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency-->
-
-
-		
-		
-		
-		
+		</dependency>
 	</dependencies>
 
 

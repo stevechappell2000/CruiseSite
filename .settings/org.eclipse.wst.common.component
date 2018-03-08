@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-                                            
+                                                
+    
     
     
     
@@ -10,7 +11,8 @@
     
     
     <wb-module deploy-name="CuiseSite-0.0.1-SNAPSHOT">
-                                                                                        
+                                                                                                
+        
         
         
         
@@ -21,7 +23,8 @@
         
         
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
-                                                                                        
+                                                                                                
+        
         
         
         
@@ -32,7 +35,8 @@
         
         
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
-                                                                                        
+                                                                                                
+        
         
         
         
@@ -43,38 +47,56 @@
         
         
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
+                
         <wb-resource deploy-path="/" source-path="/src/main/webapp"/>
-                
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/WebContent/resources"/>
+                        
+        
         <dependent-module archiveName="cruise-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/cruise/cruise">
-                        
+                                    
+            
             <dependency-type>uses</dependency-type>
-                    
+                                
+        
         </dependent-module>
-                
+                        
+        
         <dependent-module archiveName="CruiseJS-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/CruiseJS/CruiseJS">
-                        
+                                    
+            
             <dependency-type>uses</dependency-type>
-                    
+                                
+        
         </dependent-module>
-                
+                        
+        
         <dependent-module archiveName="CruiseDatabase-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/CruiseDatabase/CruiseDatabase">
-                        
+                                    
+            
             <dependency-type>uses</dependency-type>
-                    
+                                
+        
         </dependent-module>
-                
+                        
+        
         <dependent-module archiveName="CruiseS3-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/CruiseS3/CruiseS3">
-                        
+                                    
+            
             <dependency-type>uses</dependency-type>
-                    
+                                
+        
         </dependent-module>
-                
+                        
+        
         <dependent-module archiveName="CruiseKafka-0.0.1-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/CruiseKafka/CruiseKafka">
-                        
+                                    
+            
             <dependency-type>uses</dependency-type>
-                    
+                                
+        
         </dependent-module>
-                                                                                        
+                                                                                                
+        
         
         
         
@@ -85,7 +107,8 @@
         
         
         <property name="context-root" value="CuiseSite"/>
-                                                                                        
+                                                                                                
+        
         
         
         
@@ -96,7 +119,8 @@
         
         
         <property name="java-output-path" value="/CuiseSite/build/classes"/>
-                                                                                    
+                                                                                            
+    
     
     
     
@@ -107,7 +131,8 @@
     
     
     </wb-module>
-                                        
+                                            
+
 
 
 
